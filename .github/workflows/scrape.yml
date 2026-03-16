@@ -1,0 +1,31 @@
+name: Scrape & Recompute
+
+on:
+  schedule:
+    # All times UTC — 12:00 PM, 3:00 PM, 7:00 PM IST
+    - cron: '30 6 * * *'   # 12:00 PM IST
+    - cron: '30 9 * * *'   # 3:00 PM IST
+    - cron: '30 13 * * *'  # 7:00 PM IST
+  workflow_dispatch:        # allow manual trigger from GitHub Actions tab
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Scrape YouTube
+        run: |
+          curl -s -X POST "${{ secrets.VERCEL_URL }}/api/scrape/youtube" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            --fail-with-body
+
+      - name: Scrape Instagram
+        run: |
+          curl -s -X POST "${{ secrets.VERCEL_URL }}/api/scrape/instagram" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            --fail-with-body
+
+      - name: Recompute Leaderboard
+        run: |
+          curl -s -X POST "${{ secrets.VERCEL_URL }}/api/scrape/recompute" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            --fail-with-body
