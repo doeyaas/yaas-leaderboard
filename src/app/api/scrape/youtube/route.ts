@@ -100,6 +100,15 @@ async function handler(req: NextRequest) {
         const videos    = shortsTab.videos.slice(0, 30)
         videosFound += videos.length
 
+        // Debug: log first item structure
+        if (videos[0]) {
+          const sample = videos[0] as Record<string, unknown>
+          console.log('[YT-DEBUG] first short keys:', Object.keys(sample))
+          console.log('[YT-DEBUG] type:', sample.type)
+          console.log('[YT-DEBUG] id:', sample.id)
+          console.log('[YT-DEBUG] on_tap:', JSON.stringify(sample.on_tap)?.slice(0, 200))
+        }
+
         for (const v of videos) {
           const vid = videoId(v)
           if (!vid) continue
@@ -139,8 +148,8 @@ async function handler(req: NextRequest) {
               { video_id: videoRow.id, metric_name: 'views', value: views },
             ])
             if (!metricErr) metricsInserted++
-          } catch {
-            // Skip individual video errors — continue with next
+          } catch (vidErr) {
+            console.error('[YT] video error:', vidErr)
           }
         }
       } catch (ipErr) {
