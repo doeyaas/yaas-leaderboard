@@ -82,10 +82,15 @@ async function handler(req: NextRequest) {
           if (!vid) continue
 
           try {
-            const info    = await yt.getBasicInfo(vid)
-            const details = info.basic_info
+            // Extract view count directly from channel listing (Text object → number)
+            const viewText = (v as unknown as { view_count?: { toString(): string } }).view_count?.toString() ?? '0'
+            const views = parseInt(viewText.replace(/[^0-9]/g, ''), 10) || 0
 
-            // published_at from view count text fallback or best-effort date
+            // Thumbnail from listing
+            const thumbs = (v as unknown as { thumbnails?: { url: string }[] }).thumbnails
+            const thumb  = thumbs?.[0]?.url ?? null
+
+            // Publish date: GridVideo has a `published` Text like "2 days ago" — convert best-effort
             const publishedAt = new Date().toISOString()
 
             await supabase
@@ -94,8 +99,8 @@ async function handler(req: NextRequest) {
                 ip_id:             ip.id,
                 platform:          'youtube',
                 platform_video_id: vid,
-                title:             details.title ?? videoTitle(v),
-                thumbnail_url:     (details.thumbnail as { url: string }[] | undefined)?.[0]?.url ?? null,
+                title:             videoTitle(v),
+                thumbnail_url:     thumb,
                 published_at:      publishedAt,
                 is_deleted:        false,
               }, { onConflict: 'platform,platform_video_id' })
@@ -111,16 +116,10 @@ async function handler(req: NextRequest) {
 
             if (!videoRow) continue
 
-            const views    = (details.view_count as number | undefined) ?? 0
-            const likes    = (details.like_count  as number | undefined) ?? 0
-
-            const metricsPayload = [
+            const { error: metricErr } = await supabase.from('metrics').insert([
               { video_id: videoRow.id, metric_name: 'views', value: views },
-              { video_id: videoRow.id, metric_name: 'likes', value: likes },
-            ]
-
-            const { error: metricErr } = await supabase.from('metrics').insert(metricsPayload)
-            if (!metricErr) metricsInserted += metricsPayload.length
+            ])
+            if (!metricErr) metricsInserted++
           } catch {
             // Skip individual video errors — continue with next
           }

@@ -90,7 +90,7 @@ export default function ScreenRotator({
                 key={screen.id}
                 onClick={() => { setCurrent(i); setProgress(0) }}
                 className="relative flex items-center px-6 text-sm font-black uppercase tracking-[0.12em] transition-colors shrink-0 cursor-pointer"
-                style={{ color: active ? '#ffffff' : '#2a2a2a' }}
+                style={{ color: active ? '#ffffff' : '#666666' }}
               >
                 {screen.label}
                 {active && (
@@ -106,7 +106,7 @@ export default function ScreenRotator({
           <span className="text-[10px] text-[#2a2a2a] uppercase tracking-wider hidden xl:block">
             Upd. {format(lastUpdated, 'HH:mm')}
           </span>
-          <span className="text-sm font-black tabular-nums text-[#444] tracking-widest">
+          <span className="text-sm font-black tabular-nums text-[#888] tracking-widest">
             {clock}
           </span>
         </div>
