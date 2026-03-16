@@ -102,7 +102,7 @@ async function handler(req: NextRequest) {
 
         // Debug: log first item structure
         if (videos[0]) {
-          const sample = videos[0] as Record<string, unknown>
+          const sample = videos[0] as unknown as Record<string, unknown>
           console.log('[YT-DEBUG] first short keys:', Object.keys(sample))
           console.log('[YT-DEBUG] type:', sample.type)
           console.log('[YT-DEBUG] id:', sample.id)
