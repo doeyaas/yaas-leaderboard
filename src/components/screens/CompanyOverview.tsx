@@ -78,7 +78,7 @@ export default function CompanyOverview({ stats, topVideos }: Props) {
           {topVideos.slice(0, 5).map((entry) => {
             const v      = entry.video
             const ip     = v?.ip
-            const color  = ipColor(ip?.id)
+            const color  = ipColor(ip?.color)
             const barCol = rankBarColor(entry.rank)
             const numCol = podiumColor(entry.rank)
 

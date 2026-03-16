@@ -45,10 +45,10 @@ export default function LeaderboardTable({ entries, showVelocity, showEngagement
         {entries.map((entry, idx) => {
           const video      = entry.video
           const ip         = video?.ip
-          const color      = ipColor(ip?.id)
+          const color      = ipColor(ip?.color)
           const barColor   = rankBarColor(entry.rank)
           const numColor   = podiumColor(entry.rank)
-          const engagement = (video?.likes ?? 0) + (video?.comments ?? 0) + (video?.shares ?? 0)
+          const engagement = (video?.likes ?? 0) + (video?.comments ?? 0)
 
           return (
             <div

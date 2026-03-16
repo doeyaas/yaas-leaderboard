@@ -4,8 +4,6 @@ import { useState, useEffect, useCallback } from 'react'
 import { format } from 'date-fns'
 import CompanyOverview from './screens/CompanyOverview'
 import MostViewed from './screens/MostViewed'
-import MostInteractions from './screens/MostInteractions'
-import FastestGrowing from './screens/FastestGrowing'
 import IPGrowth from './screens/IPGrowth'
 import type { CompanyStats, LeaderboardEntry, IPGrowthEntry, TimeWindow } from '@/lib/types'
 
@@ -15,22 +13,18 @@ interface Props {
   stats: CompanyStats
   topVideos: LeaderboardEntry[]
   viewedEntries: Record<TimeWindow, LeaderboardEntry[]>
-  interactionEntries: Record<TimeWindow, LeaderboardEntry[]>
-  growingEntries: Record<TimeWindow, LeaderboardEntry[]>
   ipGrowthEntries: IPGrowthEntry[]
   lastUpdated: Date
 }
 
 const SCREENS = [
-  { id: 'overview',     label: 'Overview' },
-  { id: 'most-viewed',  label: 'Most Viewed' },
-  { id: 'interactions', label: 'Interactions' },
-  { id: 'fastest',      label: 'Fastest' },
-  { id: 'ip-growth',    label: 'IP Growth' },
+  { id: 'overview',    label: 'Overview' },
+  { id: 'most-viewed', label: 'Most Viewed' },
+  { id: 'ip-growth',   label: 'IP Growth' },
 ]
 
 export default function ScreenRotator({
-  stats, topVideos, viewedEntries, interactionEntries, growingEntries, ipGrowthEntries, lastUpdated
+  stats, topVideos, viewedEntries, ipGrowthEntries, lastUpdated
 }: Props) {
   const [current, setCurrent]   = useState(0)
   const [progress, setProgress] = useState(0)
@@ -130,9 +124,7 @@ export default function ScreenRotator({
       <div className="flex-1 overflow-hidden">
         {current === 0 && <CompanyOverview stats={stats} topVideos={topVideos} />}
         {current === 1 && <MostViewed entries={viewedEntries} />}
-        {current === 2 && <MostInteractions entries={interactionEntries} />}
-        {current === 3 && <FastestGrowing entries={growingEntries} />}
-        {current === 4 && <IPGrowth entries={ipGrowthEntries} month={monthLabel} />}
+        {current === 2 && <IPGrowth entries={ipGrowthEntries} month={monthLabel} />}
       </div>
     </div>
   )
