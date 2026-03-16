@@ -7,21 +7,44 @@ function authorized(req: NextRequest): boolean {
   return auth === `Bearer ${process.env.CRON_SECRET}`
 }
 
-// youtubei.js returns a union of video types — extract id/title safely
+// youtubei.js returns union types — handle GridVideo, ReelItem, ShortsLockupView
 function videoId(v: unknown): string | null {
-  if (typeof v === 'object' && v !== null && 'id' in v && typeof (v as { id: unknown }).id === 'string') {
-    return (v as { id: string }).id
-  }
+  if (typeof v !== 'object' || v === null) return null
+  const obj = v as Record<string, unknown>
+  // GridVideo / ReelItem: top-level id
+  if (typeof obj.id === 'string') return obj.id
+  // ShortsLockupView: id is in on_tap.payload.videoId
+  const tap     = obj.on_tap     as Record<string, unknown> | undefined
+  const payload = tap?.payload   as Record<string, unknown> | undefined
+  if (typeof payload?.videoId === 'string') return payload.videoId
   return null
 }
 
 function videoTitle(v: unknown): string {
-  if (typeof v === 'object' && v !== null && 'title' in v) {
-    const t = (v as { title: unknown }).title
+  if (typeof v !== 'object' || v === null) return ''
+  const obj = v as Record<string, unknown>
+  // GridVideo / ReelItem: top-level title (string or Text)
+  if ('title' in obj) {
+    const t = obj.title
     if (typeof t === 'string') return t
     if (typeof t === 'object' && t !== null && 'toString' in t) return String(t)
   }
+  // ShortsLockupView: title is in overlay_metadata.primary_text
+  const meta = obj.overlay_metadata as Record<string, unknown> | undefined
+  if (meta?.primary_text != null) return String(meta.primary_text)
   return ''
+}
+
+function videoViews(v: unknown): number {
+  if (typeof v !== 'object' || v === null) return 0
+  const obj = v as Record<string, unknown>
+  // GridVideo: view_count (Text), ReelItem: views (Text)
+  const raw = (obj.view_count ?? obj.views) as { toString(): string } | undefined
+  if (raw != null) return parseInt(raw.toString().replace(/[^0-9]/g, ''), 10) || 0
+  // ShortsLockupView: overlay_metadata.secondary_text e.g. "1.2M views"
+  const meta = obj.overlay_metadata as Record<string, unknown> | undefined
+  if (meta?.secondary_text != null) return parseInt(String(meta.secondary_text).replace(/[^0-9]/g, ''), 10) || 0
+  return 0
 }
 
 async function handler(req: NextRequest) {
@@ -82,11 +105,7 @@ async function handler(req: NextRequest) {
           if (!vid) continue
 
           try {
-            // Extract view count directly from channel listing (Text object → number)
-            const viewText = (v as unknown as { view_count?: { toString(): string } }).view_count?.toString() ?? '0'
-            const views = parseInt(viewText.replace(/[^0-9]/g, ''), 10) || 0
-
-            // Thumbnail from listing
+            const views  = videoViews(v)
             const thumbs = (v as unknown as { thumbnails?: { url: string }[] }).thumbnails
             const thumb  = thumbs?.[0]?.url ?? null
 
