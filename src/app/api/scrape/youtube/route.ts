@@ -73,8 +73,8 @@ async function handler(req: NextRequest) {
         }
 
         const channel   = await yt.getChannel(channelId)
-        const videosTab = await channel.getVideos()
-        const videos    = videosTab.videos.slice(0, 30)
+        const shortsTab = await channel.getShorts()
+        const videos    = shortsTab.videos.slice(0, 30)
         videosFound += videos.length
 
         for (const v of videos) {
