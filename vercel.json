@@ -1,7 +1,7 @@
 {
   "crons": [
-    { "path": "/api/scrape/youtube",   "schedule": "0 7,10,14 * * *" },
-    { "path": "/api/scrape/instagram", "schedule": "5 7,10,14 * * *" },
-    { "path": "/api/scrape/recompute", "schedule": "15 7,10,14 * * *" }
+    { "path": "/api/scrape/youtube",   "schedule": "0 7 * * *" },
+    { "path": "/api/scrape/instagram", "schedule": "5 7 * * *" },
+    { "path": "/api/scrape/recompute", "schedule": "15 7 * * *" }
   ]
 }
