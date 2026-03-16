@@ -10,7 +10,7 @@ git add -A
 git diff --cached --quiet || git commit -m "$MSG"
 
 echo "→ Pushing commits..."
-git pull --rebase origin main
+git pull --ff-only origin main 2>/dev/null || true
 git push origin main
 
 echo "→ Triggering Vercel deploy..."
