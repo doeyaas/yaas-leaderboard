@@ -1,0 +1,69 @@
+@import "tailwindcss";
+
+:root {
+  --f1-red: #e10600;
+  --f1-bg: #0a0a0a;
+}
+
+html, body {
+  background: #0a0a0a;
+  color: #ffffff;
+  overflow: hidden;
+}
+
+/* ── Live pulse ──────────────────────────────── */
+@keyframes live-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.2; }
+}
+.live-dot {
+  animation: live-pulse 1.4s ease-in-out infinite;
+}
+
+/* ── Row slide-in on screen change ──────────── */
+@keyframes row-in {
+  from { opacity: 0; transform: translateX(-8px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.row-in {
+  animation: row-in 0.3s ease-out both;
+}
+
+/* ── Scanline TV effect ──────────────────────── */
+.scanlines::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0px,
+    transparent 3px,
+    rgba(0, 0, 0, 0.07) 3px,
+    rgba(0, 0, 0, 0.07) 4px
+  );
+  z-index: 9999;
+}
+
+/* ── Timing row hover ────────────────────────── */
+.timing-row {
+  transition: background 0.12s;
+}
+.timing-row:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+/* ── Skewed badge ────────────────────────────── */
+.f1-skew {
+  transform: skewX(-10deg);
+  display: inline-flex;
+  align-items: center;
+}
+.f1-skew > span {
+  transform: skewX(10deg);
+  display: inline-block;
+}
+
+/* ── Hide scrollbar ──────────────────────────── */
+::-webkit-scrollbar { display: none; }
+* { scrollbar-width: none; }
