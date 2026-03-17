@@ -28,13 +28,13 @@ export default function LeaderboardTable({ entries, showVelocity, showEngagement
       {/* Column header */}
       <div className="flex items-center gap-3 px-3 py-2 border-b border-[#1c1c1c]">
         <div className="w-1 shrink-0" />
-        <span className="w-9 text-[10px] uppercase tracking-widest text-[#3a3a3a] font-bold">P</span>
-        <span className="flex-1 text-[10px] uppercase tracking-widest text-[#3a3a3a] font-bold">Content</span>
-        <span className="w-16 text-right text-[10px] uppercase tracking-widest text-[#3a3a3a] font-bold">
+        <span className="w-9 text-[10px] uppercase tracking-widest text-[#555] font-bold">P</span>
+        <span className="flex-1 text-[10px] uppercase tracking-widest text-[#555] font-bold">Content</span>
+        <span className="w-16 text-right text-[10px] uppercase tracking-widest text-[#555] font-bold">
           {showEngagement ? 'Engage' : 'Views'}
         </span>
         {showVelocity && (
-          <span className="w-20 text-right text-[10px] uppercase tracking-widest text-[#3a3a3a] font-bold">
+          <span className="w-20 text-right text-[10px] uppercase tracking-widest text-[#555] font-bold">
             /hr
           </span>
         )}
@@ -93,6 +93,11 @@ export default function LeaderboardTable({ entries, showVelocity, showEngagement
                 <p className={`${titleSize} font-bold leading-tight text-white truncate`}>
                   {video?.title ?? '—'}
                 </p>
+                {((video?.likes ?? 0) > 0 || (video?.comments ?? 0) > 0) && (
+                  <p className="text-[10px] text-[#555] leading-none mt-0.5 tabular-nums">
+                    ♥ {fmt(video?.likes ?? 0)} · 💬 {fmt(video?.comments ?? 0)}
+                  </p>
+                )}
               </div>
 
               {/* Metric value */}

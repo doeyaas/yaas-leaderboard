@@ -23,7 +23,34 @@ export async function getMostViewed(window: TimeWindow): Promise<LeaderboardEntr
     .order('rank', { ascending: true })
     .limit(10)
 
-  return (data ?? []) as LeaderboardEntry[]
+  const entries = (data ?? []) as LeaderboardEntry[]
+
+  // Batch-fetch latest likes/comments/shares per video and merge in
+  const videoIds = entries.map((e) => e.video_id)
+  if (videoIds.length) {
+    const { data: metricRows } = await supabase
+      .from('metrics')
+      .select('video_id, metric_name, value, scraped_at')
+      .in('video_id', videoIds)
+      .in('metric_name', ['likes', 'comments', 'shares'])
+      .order('scraped_at', { ascending: false })
+
+    const metricsByVideo = new Map<string, { likes?: number; comments?: number; shares?: number }>()
+    for (const row of metricRows ?? []) {
+      if (!metricsByVideo.has(row.video_id)) metricsByVideo.set(row.video_id, {})
+      const m = metricsByVideo.get(row.video_id)!
+      if (!(row.metric_name in m)) (m as Record<string, number>)[row.metric_name] = Number(row.value)
+    }
+
+    return entries.map((entry) => ({
+      ...entry,
+      video: entry.video
+        ? { ...entry.video, views: entry.score, ...metricsByVideo.get(entry.video_id) }
+        : entry.video,
+    }))
+  }
+
+  return entries
 }
 
 // ─── Top N videos (used by Company Overview) ───────────────

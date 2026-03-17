@@ -17,7 +17,7 @@ function StatCard({ label, value, accent }: { label: string; value: string; acce
       style={{ background: '#0f0f0f', borderRight: '1px solid #1a1a1a' }}
     >
       {accent && <div className="absolute top-0 left-0 right-0 h-[2px] bg-[#e10600]" />}
-      <span className="text-[10px] font-black uppercase tracking-[0.22em] text-[#383838]">{label}</span>
+      <span className="text-[10px] font-black uppercase tracking-[0.22em] text-[#666]">{label}</span>
       <span className="text-5xl font-black italic tabular-nums text-white leading-none">{value}</span>
     </div>
   )
@@ -60,7 +60,7 @@ export default function CompanyOverview({ stats, topVideos }: Props) {
             style={{ borderRight: i < 2 ? '1px solid #1a1a1a' : 'none' }}
           >
             <div>
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#2e2e2e]">{label}</p>
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#666]">{label}</p>
               <p className="text-3xl font-black italic tabular-nums text-white leading-tight">{value}</p>
             </div>
           </div>
@@ -70,7 +70,7 @@ export default function CompanyOverview({ stats, topVideos }: Props) {
       {/* Top 5 timing board */}
       <div className="flex-1 flex flex-col overflow-hidden">
         <div className="shrink-0 px-8 py-3 bg-[#0d0d0d] border-b border-[#1a1a1a]">
-          <span className="text-[10px] font-black uppercase tracking-[0.22em] text-[#2e2e2e]">
+          <span className="text-[10px] font-black uppercase tracking-[0.22em] text-[#666]">
             Top 5 — Last 24 Hours
           </span>
         </div>
@@ -107,7 +107,14 @@ export default function CompanyOverview({ stats, topVideos }: Props) {
                   ? <Youtube className="w-4 h-4 text-[#ff0000] shrink-0" />
                   : <Instagram className="w-4 h-4 text-[#e1306c] shrink-0" />
                 }
-                <span className="flex-1 text-lg font-bold text-white truncate">{v?.title ?? '—'}</span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-lg font-bold text-white truncate leading-tight">{v?.title ?? '—'}</p>
+                  {((v?.likes ?? 0) > 0 || (v?.comments ?? 0) > 0) && (
+                    <p className="text-[10px] text-[#555] tabular-nums leading-none mt-0.5">
+                      ♥ {fmt(v?.likes ?? 0)} · 💬 {fmt(v?.comments ?? 0)}
+                    </p>
+                  )}
+                </div>
                 <span className="text-2xl font-black tabular-nums text-white w-24 text-right shrink-0">
                   {fmt(v?.views ?? entry.score)}
                 </span>

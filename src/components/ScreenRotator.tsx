@@ -103,7 +103,7 @@ export default function ScreenRotator({
 
         {/* Clock + last update */}
         <div className="shrink-0 flex items-center gap-4 px-5 border-l border-[#1a1a1a]">
-          <span className="text-[10px] text-[#2a2a2a] uppercase tracking-wider hidden xl:block">
+          <span className="text-[10px] text-[#555] uppercase tracking-wider hidden xl:block">
             Upd. {format(lastUpdated, 'HH:mm')}
           </span>
           <span className="text-sm font-black tabular-nums text-[#888] tracking-widest">

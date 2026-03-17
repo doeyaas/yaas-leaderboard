@@ -28,7 +28,7 @@ export default function IPGrowth({ entries, month }: Props) {
         <h1 className="text-3xl font-black italic uppercase tracking-wide text-white">
           Constructor Standings
         </h1>
-        <span className="text-sm font-bold text-[#2a2a2a] uppercase tracking-widest ml-auto">
+        <span className="text-sm font-bold text-[#555] uppercase tracking-widest ml-auto">
           {month} vs previous month
         </span>
       </div>
@@ -36,18 +36,18 @@ export default function IPGrowth({ entries, month }: Props) {
       {/* Column headers */}
       <div className="shrink-0 grid grid-cols-[4px_52px_1fr_140px_140px_160px] gap-x-4 items-center px-8 py-3 border-b border-[#1a1a1a] bg-[#0a0a0a]">
         <div />
-        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#2e2e2e]">P</span>
-        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#2e2e2e]">IP / Team</span>
-        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#2e2e2e] text-right">This Month</span>
-        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#2e2e2e] text-right">Last Month</span>
-        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#2e2e2e] text-right">Growth</span>
+        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#666]">P</span>
+        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#666]">IP / Team</span>
+        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#666] text-right">This Month</span>
+        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#666] text-right">Last Month</span>
+        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#666] text-right">Growth</span>
       </div>
 
       {/* Rows */}
       <div className="flex-1 flex flex-col justify-around">
         {entries.map((entry) => {
           const positive  = entry.growth_percentage >= 0
-          const color     = ipColor(entry.ip.id)
+          const color     = ipColor(entry.ip.color)
           const barCol    = rankBarColor(entry.rank)
           const numCol    = podiumColor(entry.rank)
           const barWidth  = Math.abs(entry.growth_percentage) / maxGrowth
@@ -101,7 +101,7 @@ export default function IPGrowth({ entries, month }: Props) {
               </span>
 
               {/* Last month */}
-              <span className="text-xl font-bold tabular-nums text-[#3a3a3a] text-right leading-none">
+              <span className="text-xl font-bold tabular-nums text-[#555] text-right leading-none">
                 {fmt(entry.previous_month_views)}
               </span>
 

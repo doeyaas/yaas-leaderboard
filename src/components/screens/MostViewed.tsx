@@ -27,7 +27,7 @@ export default function MostViewed({ entries }: Props) {
           </span>
         </div>
         <h1 className="text-3xl font-black italic uppercase tracking-wide text-white">Most Viewed</h1>
-        <span className="text-sm font-bold text-[#2a2a2a] uppercase tracking-widest ml-auto">
+        <span className="text-sm font-bold text-[#555] uppercase tracking-widest ml-auto">
           Top 10 Videos
         </span>
       </div>
@@ -46,7 +46,7 @@ export default function MostViewed({ entries }: Props) {
                 className="f1-skew px-2 py-[2px]"
                 style={{ background: '#ffffff0a', border: '1px solid #ffffff15' }}
               >
-                <span className="text-[9px] font-black uppercase tracking-[0.2em] text-[#555]">{label}</span>
+                <span className="text-[9px] font-black uppercase tracking-[0.2em] text-[#888]">{label}</span>
               </div>
               <span className="text-sm font-black uppercase tracking-wide text-white">{sub}</span>
             </div>
