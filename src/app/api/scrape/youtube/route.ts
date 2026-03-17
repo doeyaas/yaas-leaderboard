@@ -128,6 +128,7 @@ async function handler(req: NextRequest) {
                 platform:          'youtube',
                 platform_video_id: vid,
                 title:             videoTitle(v),
+                video_url:         `https://www.youtube.com/watch?v=${vid}`,
                 thumbnail_url:     thumb,
                 published_at:      publishedAt,
                 is_deleted:        false,

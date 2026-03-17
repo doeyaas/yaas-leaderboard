@@ -90,13 +90,15 @@ async function handler(req: NextRequest) {
           const { error: videoErr } = await supabase
             .from('videos')
             .upsert({
-              ip_id: ip.id,
-              platform: 'instagram',
+              ip_id:             ip.id,
+              platform:          'instagram',
               platform_video_id: post.shortcode,
               title,
-              thumbnail_url: thumb,
-              published_at: pubAt,
-              is_deleted: false,
+              caption:           caption || null,
+              video_url:         `https://www.instagram.com/p/${post.shortcode}/`,
+              thumbnail_url:     thumb,
+              published_at:      pubAt,
+              is_deleted:        false,
             }, { onConflict: 'platform,platform_video_id' })
 
           if (videoErr) continue

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/server'
+import { INTERACTION_METRICS } from '@/lib/types'
 
 function authorized(req: NextRequest): boolean {
   const auth = req.headers.get('authorization') ?? ''
@@ -124,15 +125,22 @@ async function handler(req: NextRequest) {
 
         totalViews += viewRow ? Number(viewRow.value) : 0
 
+        // Fetch all recent interaction rows, then pick the latest per metric in code
+        // (avoids the .limit(N) bug where N rows across all metrics != 1 per metric)
         const { data: interactionRows } = await supabase
           .from('metrics')
-          .select('value')
+          .select('metric_name, value, scraped_at')
           .eq('video_id', vid)
-          .in('metric_name', ['likes', 'comments'])
+          .in('metric_name', [...INTERACTION_METRICS])
           .order('scraped_at', { ascending: false })
-          .limit(2)
 
-        totalInteractions += (interactionRows ?? []).reduce((s, r) => s + Number(r.value), 0)
+        const latestByMetric = new Map<string, number>()
+        for (const row of interactionRows ?? []) {
+          if (!latestByMetric.has(row.metric_name)) {
+            latestByMetric.set(row.metric_name, Number(row.value))
+          }
+        }
+        totalInteractions += [...latestByMetric.values()].reduce((s, v) => s + v, 0)
       }
 
       await supabase

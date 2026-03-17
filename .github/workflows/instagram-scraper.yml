@@ -2,10 +2,13 @@ name: Instagram Scraper
 
 on:
   schedule:
-    # 3x daily in IST (UTC+5:30):  12:30 PM / 3:30 PM / 8:30 PM IST
-    - cron: '0 7 * * *'    # 12:30 PM IST
-    - cron: '0 10 * * *'   # 3:30 PM IST
-    - cron: '0 15 * * *'   # 8:30 PM IST
+    # Start 2 hours before target display times (IST = UTC+5:30)
+    # Target: 12:00 PM IST → start 10:00 AM IST = 04:30 UTC
+    - cron: '30 4 * * *'
+    # Target: 3:00 PM IST → start 1:00 PM IST = 07:30 UTC
+    - cron: '30 7 * * *'
+    # Target: 7:30 PM IST → start 5:30 PM IST = 12:00 UTC
+    - cron: '0 12 * * *'
   workflow_dispatch:        # allow manual trigger from GitHub UI
 
 jobs:
@@ -35,3 +38,12 @@ jobs:
           INSTAGRAM_SESSIONID:       ${{ secrets.INSTAGRAM_SESSIONID }}
           PYTHONUNBUFFERED:          "1"
         run: python scraper/instagram_scraper.py
+
+      - name: Recompute leaderboard
+        env:
+          VERCEL_URL:  ${{ secrets.VERCEL_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          curl -s -X POST "$VERCEL_URL/api/scrape/recompute" \
+            -H "Authorization: Bearer $CRON_SECRET" \
+            --fail-with-body

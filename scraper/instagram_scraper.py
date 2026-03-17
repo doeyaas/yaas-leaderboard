@@ -192,6 +192,7 @@ def upsert_video(ip_id: str, media) -> str | None:
     thumb = str(media.thumbnail_url or "")
 
     pub_at = media.taken_at.astimezone(datetime.timezone.utc).isoformat().replace("+00:00", "Z")
+    video_url = f"https://www.instagram.com/p/{media.code}/"
 
     resp = (
         supabase.table("videos")
@@ -201,6 +202,8 @@ def upsert_video(ip_id: str, media) -> str | None:
                 "platform":          "instagram",
                 "platform_video_id": media.code,   # shortcode e.g. "C1abc123"
                 "title":             title,
+                "caption":           caption_raw or None,
+                "video_url":         video_url,
                 "thumbnail_url":     thumb,
                 "published_at":      pub_at,
                 "is_deleted":        False,
@@ -225,12 +228,8 @@ def upsert_video(ip_id: str, media) -> str | None:
     return fetch.data["id"] if fetch.data else None
 
 
-def insert_metrics(video_id: str, views: int, likes: int, comments: int) -> int:
-    payload = [
-        {"video_id": video_id, "metric_name": "views",    "value": views},
-        {"video_id": video_id, "metric_name": "likes",    "value": likes},
-        {"video_id": video_id, "metric_name": "comments", "value": comments},
-    ]
+def insert_metrics(video_id: str, metrics: dict[str, int]) -> int:
+    payload = [{"video_id": video_id, "metric_name": k, "value": v} for k, v in metrics.items()]
     resp = supabase.table("metrics").insert(payload).execute()
     return len(resp.data) if resp.data else 0
 
@@ -283,20 +282,24 @@ def scrape_profile(cl: Client, ip: dict, cutoff: datetime.datetime) -> tuple[int
             views    = full.play_count or full.view_count or 0
             likes    = full.like_count    or 0
             comments = full.comment_count or 0
+            shares   = getattr(full, "share_count", None) or getattr(full, "reshare_count", None) or 0
         except Exception:
             views    = media.play_count or media.view_count or 0
             likes    = media.like_count    or 0
             comments = media.comment_count or 0
+            shares   = getattr(media, "share_count", None) or getattr(media, "reshare_count", None) or 0
 
         video_id = upsert_video(ip_id, media)
         if not video_id:
             log(f"    WARN: could not upsert post {media.code}")
         else:
             upserted     += 1
-            metrics_count += insert_metrics(video_id, views, likes, comments)
+            metrics_count += insert_metrics(video_id, {
+                "views": views, "likes": likes, "comments": comments, "shares": shares,
+            })
 
         delay = POST_DELAY_BASE + random.uniform(-POST_DELAY_JITTER, POST_DELAY_JITTER)
-        log(f"    [{found}] {media.code} — views:{views} likes:{likes} | waiting {delay:.1f}s")
+        log(f"    [{found}] {media.code} — views:{views} likes:{likes} shares:{shares} | waiting {delay:.1f}s")
         time.sleep(delay)
 
     log(f"  @{handle}: {found} found, {upserted} upserted, {metrics_count} metric rows")

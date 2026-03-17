@@ -1,5 +1,7 @@
 export type Platform = 'youtube' | 'instagram'
 
+export const INTERACTION_METRICS = ['likes', 'comments', 'shares'] as const
+
 export type TimeWindow = '24h' | '7d' | '30d'
 
 export type LeaderboardCategory = 'most_viewed'
@@ -27,6 +29,8 @@ export interface Video {
   platform: Platform
   platform_video_id: string
   title: string
+  caption: string | null
+  video_url: string | null
   thumbnail_url: string | null
   published_at: string
   is_deleted: boolean
@@ -36,7 +40,7 @@ export interface Video {
 export interface Metric {
   id: string
   video_id: string
-  metric_name: 'views' | 'likes' | 'comments'
+  metric_name: 'views' | 'likes' | 'comments' | 'shares'
   value: number
   scraped_at: string
 }
@@ -53,6 +57,7 @@ export interface LeaderboardEntry {
     views?: number
     likes?: number
     comments?: number
+    shares?: number
     velocity?: number
   }
 }

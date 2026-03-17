@@ -3,6 +3,7 @@ import type {
   Brand, IP, CompanyStats, LeaderboardEntry,
   IPGrowthEntry, TimeWindow,
 } from '@/lib/types'
+import { INTERACTION_METRICS } from '@/lib/types'
 
 // ─── Most Viewed ───────────────────────────────────────────
 
@@ -99,7 +100,7 @@ export async function getCompanyStats(): Promise<CompanyStats> {
   const { data: interactions } = await supabase
     .from('metrics')
     .select('value')
-    .in('metric_name', ['likes', 'comments'])
+    .in('metric_name', [...INTERACTION_METRICS])
 
   const totalInteractions = (interactions ?? []).reduce((sum, r) => sum + Number(r.value), 0)
 

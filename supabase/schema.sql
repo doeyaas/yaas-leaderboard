@@ -33,6 +33,8 @@ create table if not exists videos (
   platform          text        not null check (platform in ('youtube', 'instagram')),
   platform_video_id text        not null,
   title             text,
+  caption           text,
+  video_url         text,
   thumbnail_url     text,
   published_at      timestamptz,
   is_deleted        boolean     not null default false,
@@ -77,7 +79,7 @@ create table if not exists ip_monthly_metrics (
   ip_id               uuid    not null references ips(id) on delete cascade,
   month               date    not null, -- first day of the month, e.g. 2026-03-01
   total_views         bigint  not null default 0,
-  total_interactions  bigint  not null default 0, -- likes + comments (shares not available)
+  total_interactions  bigint  not null default 0, -- likes + comments + shares
   unique (ip_id, month)
 );
 
