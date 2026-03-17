@@ -41,3 +41,7 @@ deploy.env
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Instagram scraper session files
+scraper/ig_settings.json
+scraper/session-*
