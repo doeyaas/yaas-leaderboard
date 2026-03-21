@@ -81,8 +81,8 @@ except ImportError:
 # Constants
 # ---------------------------------------------------------------------------
 LOOKBACK_DAYS      = 30   # fetch posts published in the last N days
-POST_DELAY_BASE    = 6    # base seconds between individual post fetches
-POST_DELAY_JITTER  = 2    # ± random jitter  →  actual range: 4–8 s
+POST_DELAY_BASE    = 0    # no per-post API call needed — user_medias() fetches all at once
+POST_DELAY_JITTER  = 0    # ± random jitter
 PROFILE_DELAY      = 45   # seconds between profiles
 SCRAPE_LIMIT       = int(os.getenv('SCRAPE_LIMIT', '15'))  # posts per profile
 SETTINGS_FILE      = Path(__file__).parent / "ig_settings.json"
@@ -176,7 +176,7 @@ def build_client() -> Client:
 def fetch_active_ips() -> list[dict]:
     resp = (
         supabase.table("ips")
-        .select("id, name, instagram_handle")
+        .select("id, name, instagram_handle, instagram_user_id")
         .eq("active", True)
         .not_.is_("instagram_handle", "null")
         .execute()
@@ -241,13 +241,21 @@ def scrape_profile(cl: Client, ip: dict, cutoff: datetime.datetime) -> tuple[int
 
     log(f"  Scraping @{handle} …")
 
-    try:
-        # Use private v1 API directly — avoids the public web_profile_info endpoint that 429s
-        user_info = cl.user_info_by_username_v1(handle)
-        user_id = user_info.pk
-    except Exception as exc:
-        log(f"  ERROR resolving user ID for @{handle}: {exc}")
-        return 0, 0, 0
+    # Use cached user_id if available — skips user_info_by_username_v1 API call
+    cached_user_id = ip.get("instagram_user_id")
+    if cached_user_id:
+        user_id = cached_user_id
+        log(f"  Using cached user_id={user_id}")
+    else:
+        try:
+            user_info = cl.user_info_by_username_v1(handle)
+            user_id = user_info.pk
+            # Save for future runs
+            supabase.table("ips").update({"instagram_user_id": str(user_id)}).eq("id", ip_id).execute()
+            log(f"  Resolved and cached user_id={user_id}")
+        except Exception as exc:
+            log(f"  ERROR resolving user ID for @{handle}: {exc}")
+            return 0, 0, 0
 
     found = upserted = metrics_count = 0
 
@@ -277,18 +285,10 @@ def scrape_profile(cl: Client, ip: dict, cutoff: datetime.datetime) -> tuple[int
             continue
 
         found += 1
-        # user_medias() omits play_count — fetch full media info to get views
-        try:
-            full = cl.media_info(media.pk)
-            views    = full.play_count or full.view_count or 0
-            likes    = full.like_count    or 0
-            comments = full.comment_count or 0
-            shares   = getattr(full, "share_count", None) or getattr(full, "reshare_count", None) or 0
-        except Exception:
-            views    = media.play_count or media.view_count or 0
-            likes    = media.like_count    or 0
-            comments = media.comment_count or 0
-            shares   = getattr(media, "share_count", None) or getattr(media, "reshare_count", None) or 0
+        views    = media.play_count or media.view_count or 0
+        likes    = media.like_count    or 0
+        comments = media.comment_count or 0
+        shares   = getattr(media, "share_count", None) or getattr(media, "reshare_count", None) or 0
 
         video_id = upsert_video(ip_id, media)
         if not video_id:
