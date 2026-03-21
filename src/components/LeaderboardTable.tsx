@@ -3,6 +3,7 @@
 import type { LeaderboardEntry } from '@/lib/types'
 import { ipColor, podiumColor, rankBarColor } from '@/lib/ip-colors'
 import PlatformIcon from '@/components/PlatformIcon'
+import { IPLogo } from '@/components/IPLogo'
 
 export function fmt(n: number): string {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`
@@ -75,9 +76,10 @@ export default function LeaderboardTable({ entries, showVelocity, showEngagement
                 <div className="flex items-center gap-1.5 mb-0.5">
                   {/* IP badge — skewed like F1 timing */}
                   <div
-                    className="f1-skew px-1.5 py-[1px] shrink-0"
+                    className="f1-skew px-1.5 py-[1px] shrink-0 flex items-center gap-1.5"
                     style={{ background: `${color}18`, border: `1px solid ${color}44` }}
                   >
+                    <IPLogo logoUrl={ip?.logo_url ?? null} name={ip?.name ?? ''} size={14} />
                     <span className="text-[9px] font-black uppercase tracking-wider" style={{ color }}>
                       {ip?.name ?? '??'}
                     </span>

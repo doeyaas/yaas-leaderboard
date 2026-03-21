@@ -27,7 +27,7 @@ export default async function DisplayPage() {
       ipGrowthEntries,
     ] = await Promise.all([
       getCompanyStats(),
-      getTopVideos(5),
+      getTopVideos(15),
       getMostViewed('24h'),
       getMostViewed('7d'),
       getMostViewed('30d'),

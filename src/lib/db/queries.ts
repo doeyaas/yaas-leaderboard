@@ -21,7 +21,7 @@ export async function getMostViewed(window: TimeWindow): Promise<LeaderboardEntr
     .eq('category', 'most_viewed')
     .eq('time_window', window)
     .order('rank', { ascending: true })
-    .limit(10)
+    .limit(15)
 
   const entries = (data ?? []) as LeaderboardEntry[]
 

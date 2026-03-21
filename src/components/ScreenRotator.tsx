@@ -59,7 +59,7 @@ export default function ScreenRotator({
     <div className="scanlines flex flex-col h-screen bg-[#0a0a0a] text-white overflow-hidden">
 
       {/* ── Top nav bar ─────────────────────────────── */}
-      <div className="shrink-0 flex items-stretch h-14 bg-[#0d0d0d] border-b border-[#1a1a1a]">
+      <div className="shrink-0 flex items-stretch h-20 bg-[#0d0d0d] border-b border-[#1a1a1a]">
 
         {/* Brand mark with angled right edge */}
         <div
@@ -70,15 +70,15 @@ export default function ScreenRotator({
             paddingRight: '2rem',
           }}
         >
-          <span className="text-white text-sm font-black uppercase tracking-[0.15em] italic">
+          <span className="text-white text-xl font-black uppercase tracking-[0.15em] italic">
             LEADERBOARD
           </span>
         </div>
 
         {/* LIVE indicator */}
         <div className="flex items-center gap-2 px-5 shrink-0 border-r border-[#1a1a1a]">
-          <span className="live-dot w-2 h-2 rounded-full bg-[#e10600]" />
-          <span className="text-[11px] font-black uppercase tracking-[0.25em] text-[#e10600]">Live</span>
+          <span className="live-dot w-3 h-3 rounded-full bg-[#e10600]" />
+          <span className="text-base font-black uppercase tracking-[0.25em] text-[#e10600]">Live</span>
         </div>
 
         {/* Screen tabs */}
@@ -89,7 +89,7 @@ export default function ScreenRotator({
               <button
                 key={screen.id}
                 onClick={() => { setCurrent(i); setProgress(0) }}
-                className="relative flex items-center px-6 text-sm font-black uppercase tracking-[0.12em] transition-colors shrink-0 cursor-pointer"
+                className="relative flex items-center px-6 text-xl font-black uppercase tracking-[0.1em] transition-colors shrink-0 cursor-pointer"
                 style={{ color: active ? '#ffffff' : '#666666' }}
               >
                 {screen.label}
@@ -103,10 +103,10 @@ export default function ScreenRotator({
 
         {/* Clock + last update */}
         <div className="shrink-0 flex items-center gap-4 px-5 border-l border-[#1a1a1a]">
-          <span className="text-[10px] text-[#555] uppercase tracking-wider hidden xl:block">
+          <span className="text-sm text-[#555] uppercase tracking-wider">
             Upd. {format(lastUpdated, 'HH:mm')}
           </span>
-          <span className="text-sm font-black tabular-nums text-[#888] tracking-widest">
+          <span className="text-xl font-black tabular-nums text-[#888] tracking-widest">
             {clock}
           </span>
         </div>
