@@ -1,29 +1,77 @@
 'use client'
 
-import { Youtube, Instagram } from 'lucide-react'
 import type { CompanyStats, LeaderboardEntry } from '@/lib/types'
 import { fmt } from '@/components/LeaderboardTable'
 import { ipColor, rankBarColor, podiumColor } from '@/lib/ip-colors'
+import PlatformIcon from '@/components/PlatformIcon'
 
 interface Props {
   stats: CompanyStats
   topVideos: LeaderboardEntry[]
 }
 
-function StatCard({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
+const PODIUM_HEIGHT: Record<1 | 2 | 3, string> = { 1: 'h-full', 2: 'h-3/4', 3: 'h-2/3' }
+
+function PodiumCard({ entry, rank }: { entry: LeaderboardEntry; rank: 1 | 2 | 3 }) {
+  const v = entry.video
+  const ip = v?.ip
+  const color = ipColor(ip?.color)
+  const numCol = podiumColor(rank)
+  const isFirst = rank === 1
+  const heightClass = PODIUM_HEIGHT[rank]
+
   return (
     <div
-      className="relative flex flex-col gap-1 p-5 overflow-hidden"
-      style={{ background: '#0f0f0f', borderRight: '1px solid #1a1a1a' }}
+      className={`relative flex flex-col overflow-hidden flex-1 ${heightClass}`}
+      style={{
+        background: `linear-gradient(180deg, ${color}22 0%, #0a0a0a 100%)`,
+        border: `1px solid ${color}44`,
+        ...(isFirst && { borderTop: `3px solid ${color}` }),
+      }}
     >
-      {accent && <div className="absolute top-0 left-0 right-0 h-[2px] bg-[#e10600]" />}
-      <span className="text-[10px] font-black uppercase tracking-[0.22em] text-[#666]">{label}</span>
-      <span className="text-5xl font-black italic tabular-nums text-white leading-none">{value}</span>
+      {/* Rank number */}
+      <div
+        className="shrink-0 flex items-center justify-center py-4"
+        style={{ background: `${color}15`, borderBottom: `1px solid ${color}30` }}
+      >
+        <span
+          className="font-black italic tabular-nums leading-none"
+          style={{ color: numCol, fontSize: isFirst ? '4.5rem' : '3rem' }}
+        >
+          {rank}
+        </span>
+      </div>
+
+      {/* Content */}
+      <div className="flex flex-col gap-2 p-4 flex-1 overflow-hidden">
+        <div
+          className="f1-skew px-2 py-[3px] self-start shrink-0"
+          style={{ background: `${color}18`, border: `1px solid ${color}50` }}
+        >
+          <span className="text-xs font-black uppercase tracking-wider" style={{ color }}>
+            {ip?.name ?? '??'}
+          </span>
+        </div>
+        <p className="text-sm font-bold text-white leading-snug line-clamp-2 flex-1">
+          {v?.title ?? '—'}
+        </p>
+        <div className="flex items-center gap-2 shrink-0 mt-auto">
+          <PlatformIcon platform={v?.platform} />
+          <span className="text-2xl font-black italic tabular-nums text-white">
+            {fmt(v?.views ?? entry.score)}
+          </span>
+        </div>
+      </div>
     </div>
   )
 }
 
 export default function CompanyOverview({ stats, topVideos }: Props) {
+  const p1   = topVideos.find(e => e.rank === 1)
+  const p2   = topVideos.find(e => e.rank === 2)
+  const p3   = topVideos.find(e => e.rank === 3)
+  const rest = topVideos.filter(e => e.rank >= 4 && e.rank <= 10)
+
   return (
     <div className="flex flex-col h-full">
 
@@ -40,42 +88,47 @@ export default function CompanyOverview({ stats, topVideos }: Props) {
         <h1 className="text-3xl font-black italic uppercase tracking-wide text-white">Total Reach</h1>
       </div>
 
-      {/* Big view counters */}
-      <div className="shrink-0 grid grid-cols-3 border-b border-[#1a1a1a]">
-        <StatCard label="24H Views" value={fmt(stats.views_24h)} accent />
-        <StatCard label="7D Views"  value={fmt(stats.views_7d)} />
-        <StatCard label="30D Views" value={fmt(stats.views_30d)} />
-      </div>
-
-      {/* Secondary counters */}
-      <div className="shrink-0 grid grid-cols-3 border-b border-[#1a1a1a]">
+      {/* Compact 6-column stats bar */}
+      <div className="shrink-0 grid grid-cols-6 border-b border-[#1a1a1a]">
         {[
-          { label: 'Total Interactions', value: fmt(stats.total_interactions) },
-          { label: 'Videos Posted',      value: stats.total_videos.toLocaleString() },
-          { label: 'Active IPs',         value: stats.total_active_ips.toString() },
-        ].map(({ label, value }, i) => (
+          { label: '24H Views',    value: fmt(stats.views_24h),              accent: true },
+          { label: '7D Views',     value: fmt(stats.views_7d) },
+          { label: '30D Views',    value: fmt(stats.views_30d) },
+          { label: 'Interactions', value: fmt(stats.total_interactions) },
+          { label: 'Videos',       value: stats.total_videos.toLocaleString() },
+          { label: 'Active IPs',   value: stats.total_active_ips.toString() },
+        ].map(({ label, value, accent }, i) => (
           <div
             key={label}
-            className="flex items-center gap-4 px-5 py-3 bg-[#0a0a0a]"
-            style={{ borderRight: i < 2 ? '1px solid #1a1a1a' : 'none' }}
+            className="relative flex flex-col gap-0.5 px-4 py-3 bg-[#0f0f0f]"
+            style={{ borderRight: i < 5 ? '1px solid #1a1a1a' : 'none' }}
           >
-            <div>
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#666]">{label}</p>
-              <p className="text-3xl font-black italic tabular-nums text-white leading-tight">{value}</p>
-            </div>
+            {accent && <div className="absolute top-0 left-0 right-0 h-[2px] bg-[#e10600]" />}
+            <span className="text-[9px] font-black uppercase tracking-[0.22em] text-[#555]">{label}</span>
+            <span className="text-2xl font-black italic tabular-nums text-white leading-none">{value}</span>
           </div>
         ))}
       </div>
 
-      {/* Top 5 timing board */}
+      {/* Podium — P2 | P1 | P3, aligned to bottom */}
+      <div
+        className="shrink-0 flex items-end gap-2 px-8 py-4 h-56"
+        style={{ background: '#080808', borderBottom: '1px solid #1a1a1a' }}
+      >
+        {p2 && <PodiumCard entry={p2} rank={2} />}
+        {p1 && <PodiumCard entry={p1} rank={1} />}
+        {p3 && <PodiumCard entry={p3} rank={3} />}
+      </div>
+
+      {/* Race Results P4–P10 */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        <div className="shrink-0 px-8 py-3 bg-[#0d0d0d] border-b border-[#1a1a1a]">
+        <div className="shrink-0 px-8 py-2 bg-[#0d0d0d] border-b border-[#1a1a1a]">
           <span className="text-[10px] font-black uppercase tracking-[0.22em] text-[#666]">
-            Top 5 — Last 24 Hours
+            Race Results — Last 24 Hours
           </span>
         </div>
-        <div className="flex-1 flex flex-col justify-around">
-          {topVideos.slice(0, 5).map((entry) => {
+        <div className="flex-1 flex flex-col justify-around overflow-hidden">
+          {rest.map((entry) => {
             const v      = entry.video
             const ip     = v?.ip
             const color  = ipColor(ip?.color)
@@ -85,12 +138,12 @@ export default function CompanyOverview({ stats, topVideos }: Props) {
             return (
               <div
                 key={entry.id}
-                className="timing-row row-in flex items-center gap-4 px-8 py-3 border-b border-[#111] last:border-0"
-                style={{ animationDelay: `${(entry.rank - 1) * 60}ms` }}
+                className="timing-row row-in flex items-center gap-4 px-8 py-2 border-b border-[#111] last:border-0"
+                style={{ animationDelay: `${(entry.rank - 4) * 50}ms` }}
               >
-                <div className="w-[3px] h-8 rounded-full shrink-0" style={{ background: barCol }} />
+                <div className="w-[3px] h-6 rounded-full shrink-0" style={{ background: barCol }} />
                 <span
-                  className="text-3xl font-black italic tabular-nums w-10 shrink-0 leading-none"
+                  className="text-2xl font-black italic tabular-nums w-8 shrink-0 leading-none"
                   style={{ color: numCol }}
                 >
                   {entry.rank}
@@ -103,19 +156,11 @@ export default function CompanyOverview({ stats, topVideos }: Props) {
                     {ip?.name ?? '??'}
                   </span>
                 </div>
-                {v?.platform === 'youtube'
-                  ? <Youtube className="w-4 h-4 text-[#ff0000] shrink-0" />
-                  : <Instagram className="w-4 h-4 text-[#e1306c] shrink-0" />
-                }
+                <PlatformIcon platform={v?.platform} />
                 <div className="flex-1 min-w-0">
-                  <p className="text-lg font-bold text-white truncate leading-tight">{v?.title ?? '—'}</p>
-                  {((v?.likes ?? 0) > 0 || (v?.comments ?? 0) > 0) && (
-                    <p className="text-[10px] text-[#555] tabular-nums leading-none mt-0.5">
-                      ♥ {fmt(v?.likes ?? 0)} · 💬 {fmt(v?.comments ?? 0)}
-                    </p>
-                  )}
+                  <p className="text-base font-bold text-white truncate leading-tight">{v?.title ?? '—'}</p>
                 </div>
-                <span className="text-2xl font-black tabular-nums text-white w-24 text-right shrink-0">
+                <span className="text-xl font-black tabular-nums text-white shrink-0">
                   {fmt(v?.views ?? entry.score)}
                 </span>
               </div>

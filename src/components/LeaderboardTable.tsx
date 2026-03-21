@@ -1,8 +1,8 @@
 'use client'
 
-import { Youtube, Instagram } from 'lucide-react'
 import type { LeaderboardEntry } from '@/lib/types'
 import { ipColor, podiumColor, rankBarColor } from '@/lib/ip-colors'
+import PlatformIcon from '@/components/PlatformIcon'
 
 export function fmt(n: number): string {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`
@@ -84,10 +84,7 @@ export default function LeaderboardTable({ entries, showVelocity, showEngagement
                   </div>
 
                   {/* Platform */}
-                  {video?.platform === 'youtube'
-                    ? <Youtube className="w-3 h-3 text-[#ff0000] shrink-0" />
-                    : <Instagram className="w-3 h-3 text-[#e1306c] shrink-0" />
-                  }
+                  <PlatformIcon platform={video?.platform} size="sm" />
                 </div>
 
                 <p className={`${titleSize} font-bold leading-tight text-white truncate`}>
