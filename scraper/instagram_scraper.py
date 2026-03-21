@@ -81,8 +81,8 @@ except ImportError:
 # Constants
 # ---------------------------------------------------------------------------
 LOOKBACK_DAYS      = 30   # fetch posts published in the last N days
-POST_DELAY_BASE    = 0    # no per-post API call needed — user_medias() fetches all at once
-POST_DELAY_JITTER  = 0    # ± random jitter
+POST_DELAY_BASE    = 3    # seconds between per-post media_info() API calls
+POST_DELAY_JITTER  = 2    # ± random jitter
 PROFILE_DELAY      = 45   # seconds between profiles
 SCRAPE_LIMIT       = int(os.getenv('SCRAPE_LIMIT', '15'))  # posts per profile
 SETTINGS_FILE      = Path(__file__).parent / "ig_settings.json"
@@ -285,23 +285,33 @@ def scrape_profile(cl: Client, ip: dict, cutoff: datetime.datetime) -> tuple[int
             continue
 
         found += 1
-        views    = media.play_count or media.view_count or 0
-        likes    = media.like_count    or 0
-        comments = media.comment_count or 0
-        shares   = getattr(media, "share_count", None) or getattr(media, "reshare_count", None) or 0
 
-        video_id = upsert_video(ip_id, media)
+        # user_medias() bulk response omits play_count/view_count — fetch full info
+        try:
+            full = cl.media_info(media.pk)
+        except Exception as exc:
+            log(f"    WARN: media_info failed for {media.code}: {exc} — using partial data")
+            full = media
+
+        # Rate-limit delay applies to the Instagram API call above, not the DB writes below
+        delay = POST_DELAY_BASE + random.uniform(-POST_DELAY_JITTER, POST_DELAY_JITTER)
+        time.sleep(delay)
+
+        views    = full.play_count or full.view_count or 0
+        likes    = full.like_count    or 0
+        comments = full.comment_count or 0
+        shares   = getattr(full, "share_count", None) or getattr(full, "reshare_count", None) or 0
+
+        video_id = upsert_video(ip_id, full)
         if not video_id:
-            log(f"    WARN: could not upsert post {media.code}")
+            log(f"    WARN: could not upsert post {full.code}")
         else:
             upserted     += 1
             metrics_count += insert_metrics(video_id, {
                 "views": views, "likes": likes, "comments": comments, "shares": shares,
             })
 
-        delay = POST_DELAY_BASE + random.uniform(-POST_DELAY_JITTER, POST_DELAY_JITTER)
-        log(f"    [{found}] {media.code} — views:{views} likes:{likes} shares:{shares} | waiting {delay:.1f}s")
-        time.sleep(delay)
+        log(f"    [{found}] {full.code} — views:{views} likes:{likes} shares:{shares} | waited {delay:.1f}s")
 
     log(f"  @{handle}: {found} found, {upserted} upserted, {metrics_count} metric rows")
     return found, upserted, metrics_count
