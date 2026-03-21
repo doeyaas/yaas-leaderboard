@@ -3,24 +3,47 @@ name: Scrape & Recompute
 on:
   schedule:
     # All times UTC — 12:00 PM, 3:00 PM, 7:00 PM IST
-    - cron: '30 6 * * *'   # 12:00 PM IST
-    - cron: '30 9 * * *'   # 3:00 PM IST
-    - cron: '30 13 * * *'  # 7:00 PM IST
+    - cron: '30 6 * * *'   # 12:00 PM IST — first run (limit 30)
+    - cron: '30 9 * * *'   # 3:00 PM IST  — repeat  (limit 15)
+    - cron: '30 13 * * *'  # 7:00 PM IST  — repeat  (limit 15)
   workflow_dispatch:        # allow manual trigger from GitHub Actions tab
 
 jobs:
-  scrape:
+  scrape-first:
     runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' || github.event.schedule == '30 6 * * *'
     steps:
       - name: Scrape YouTube
         run: |
-          curl -s -X POST "${{ secrets.VERCEL_URL }}/api/scrape/youtube" \
+          curl -s -X POST "${{ secrets.VERCEL_URL }}/api/scrape/youtube?limit=30" \
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
             --fail-with-body
 
       - name: Scrape Instagram
         run: |
-          curl -s -X POST "${{ secrets.VERCEL_URL }}/api/scrape/instagram" \
+          curl -s -X POST "${{ secrets.VERCEL_URL }}/api/scrape/instagram?limit=30" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            --fail-with-body
+
+      - name: Recompute Leaderboard
+        run: |
+          curl -s -X POST "${{ secrets.VERCEL_URL }}/api/scrape/recompute" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            --fail-with-body
+
+  scrape-repeat:
+    runs-on: ubuntu-latest
+    if: github.event.schedule == '30 9 * * *' || github.event.schedule == '30 13 * * *'
+    steps:
+      - name: Scrape YouTube
+        run: |
+          curl -s -X POST "${{ secrets.VERCEL_URL }}/api/scrape/youtube?limit=15" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            --fail-with-body
+
+      - name: Scrape Instagram
+        run: |
+          curl -s -X POST "${{ secrets.VERCEL_URL }}/api/scrape/instagram?limit=15" \
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
             --fail-with-body
 

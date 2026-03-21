@@ -68,13 +68,14 @@ async function handler(req: NextRequest) {
       return NextResponse.json({ ok: true, message: 'No active IPs with Instagram handles' })
     }
 
+    const limit = parseInt(req.nextUrl.searchParams.get('limit') ?? '15', 10)
     let postsFound = 0
     let postsUpserted = 0
     let metricsInserted = 0
 
     for (const ip of ips) {
       try {
-        const posts = await fetchProfilePosts(ip.instagram_handle!)
+        const posts = (await fetchProfilePosts(ip.instagram_handle!)).slice(0, limit)
         postsFound += posts.length
 
         for (const post of posts) {

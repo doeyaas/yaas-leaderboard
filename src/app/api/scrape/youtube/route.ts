@@ -67,6 +67,8 @@ async function handler(req: NextRequest) {
 
   const logId = logRow?.id
 
+  const limit = parseInt(req.nextUrl.searchParams.get('limit') ?? '15', 10)
+
   try {
     const { data: ips } = await supabase
       .from('ips')
@@ -97,7 +99,7 @@ async function handler(req: NextRequest) {
 
         const channel   = await yt.getChannel(channelId)
         const shortsTab = await channel.getShorts()
-        const videos    = shortsTab.videos.slice(0, 30)
+        const videos    = shortsTab.videos.slice(0, limit)
         videosFound += videos.length
 
         // Debug: log first item structure

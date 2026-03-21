@@ -81,9 +81,10 @@ except ImportError:
 # Constants
 # ---------------------------------------------------------------------------
 LOOKBACK_DAYS      = 30   # fetch posts published in the last N days
-POST_DELAY_BASE    = 6    # base seconds between individual post fetches
-POST_DELAY_JITTER  = 2    # ± random jitter  →  actual range: 4–8 s
+POST_DELAY_BASE    = 4    # base seconds between individual post fetches
+POST_DELAY_JITTER  = 1    # ± random jitter  →  actual range: 3–5 s
 PROFILE_DELAY      = 15   # seconds between profiles
+SCRAPE_LIMIT       = int(os.getenv('SCRAPE_LIMIT', '15'))  # posts per profile
 SETTINGS_FILE      = Path(__file__).parent / "ig_settings.json"
 
 # ---------------------------------------------------------------------------
@@ -251,8 +252,8 @@ def scrape_profile(cl: Client, ip: dict, cutoff: datetime.datetime) -> tuple[int
     found = upserted = metrics_count = 0
 
     try:
-        # Fetch last 15 posts — covers ~1-2 weeks for active accounts
-        medias = cl.user_medias(user_id, amount=15)
+        # Fetch last N posts — covers ~1-2 weeks for active accounts
+        medias = cl.user_medias(user_id, amount=SCRAPE_LIMIT)
     except LoginRequired:
         log("  ERROR: session expired mid-run — re-login required")
         return 0, 0, 0
